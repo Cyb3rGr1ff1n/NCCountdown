@@ -44,6 +44,14 @@ async def on_guild_join(guild):
 4. Use `/start` para iniciar o countdown.
 5. Use `/stop` para interromper manualmente o countdown.
 
+[IMPORTANTE] Os três campos (`targettime`, `mentions`, `channel`) devem ser definidos antes de iniciar.
+🧠 Qualquer dúvida, fale com o Spyn0x. Boa sorte no BID!'''
+            )
+            break.
+2. Use `/mentions` para definir quem será notificado (ex: @everyone).
+3. Use `/channel` para definir o canal onde farei os alertas.
+4. Use `/start` para iniciar o countdown.
+5. Use `/stop` para interromper manualmente o countdown.
 ⚠️ Os três campos (`targettime`, `mentions`, `channel`) devem ser definidos antes de iniciar.
 🧠 Qualquer dúvida, fale com o Spyn0x. Boa sorte no BID!'''
             )
