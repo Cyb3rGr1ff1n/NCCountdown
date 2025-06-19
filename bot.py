@@ -94,9 +94,12 @@ async def countdown_loop():
     channel = client.get_channel(channel_id)
     tz = pytz.timezone("America/Sao_Paulo")
 
+    aviso_10s = [50, 40, 30, 20, 10]
+
     while countdown_started:
         now = datetime.now(tz)
         diff = target_time - now
+        total_seconds = int(diff.total_seconds())
 
         if diff <= timedelta(hours=1) and diff > timedelta(minutes=1):
             if diff.seconds % 300 < 5:
@@ -106,27 +109,23 @@ async def countdown_loop():
             else:
                 await asyncio.sleep(1)
 
-        elif timedelta(seconds=0) < diff <= timedelta(minutes=1):
-            if diff.total_seconds() > 10:
-                # Aviso a cada 10 segundos
-                while diff.total_seconds() > 10 and countdown_started:
-                    await channel.send(f"{mention_role} Faltam {int(diff.total_seconds())} segundos para o bid encerrar.")
-                    await asyncio.sleep(10)
-                    now = datetime.now(tz)
-                    diff = target_time - now
-            # Nos últimos 10 segundos
-            while diff.total_seconds() > 0 and countdown_started:
-                await channel.send(f"{mention_role} Faltam {int(diff.total_seconds())} segundos para o bid encerrar.")
-                await asyncio.sleep(1)
-                now = datetime.now(tz)
-                diff = target_time - now
+        elif 60 >= total_seconds > 10:
+            if total_seconds == 60:
+                await channel.send(f"{mention_role} Faltam 1 minuto para o bid encerrar.")
+            elif total_seconds in aviso_10s:
+                await channel.send(f"{mention_role} Faltam {total_seconds} segundos para o bid encerrar.")
+            await asyncio.sleep(1)
+
+        elif 10 >= total_seconds > 0:
+            await channel.send(f"{mention_role} Faltam {total_seconds} segundos para o bid encerrar.")
+            await asyncio.sleep(1)
+
+        elif total_seconds <= 0:
             await channel.send(f"{mention_role} O bid encerrou agora!")
             countdown_started = False
             break
 
-        elif diff <= timedelta(seconds=0):
-            break
         else:
-            await asyncio.sleep(10)
+            await asyncio.sleep(1)
 
 client.run(os.environ['YOUR_BOT_TOKEN'])
