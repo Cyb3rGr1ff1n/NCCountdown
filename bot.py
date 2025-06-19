@@ -110,4 +110,5 @@ async def countdown_loop():
         else:
             await asyncio.sleep(10)
 
-client.run('YOUR_BOT_TOKEN')
+import os
+client.run(os.environ['YOUR_BOT_TOKEN'])
