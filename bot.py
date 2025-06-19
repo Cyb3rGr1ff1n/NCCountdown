@@ -4,6 +4,7 @@ from discord import app_commands
 from datetime import datetime, timedelta
 import pytz
 import asyncio
+import os
 
 intents = discord.Intents.default()
 client = commands.Bot(command_prefix="/", intents=intents)
@@ -78,12 +79,22 @@ async def start_countdown(interaction: discord.Interaction):
     )
     client.loop.create_task(countdown_loop())
 
+@client.tree.command(name="stop")
+@app_commands.describe(reason="(Opcional) Motivo para parar o countdown")
+async def stop_countdown(interaction: discord.Interaction, reason: str = "sem motivo especificado"):
+    global countdown_started
+    if countdown_started:
+        countdown_started = False
+        await interaction.response.send_message(f"🛑 Countdown interrompido manualmente. Motivo: {reason}")
+    else:
+        await interaction.response.send_message("🤖 Nenhum countdown está ativo no momento.", ephemeral=True)
+
 async def countdown_loop():
     global countdown_started
     channel = client.get_channel(channel_id)
     tz = pytz.timezone("America/Sao_Paulo")
 
-    while True:
+    while countdown_started:
         now = datetime.now(tz)
         diff = target_time - now
 
@@ -96,7 +107,15 @@ async def countdown_loop():
                 await asyncio.sleep(1)
 
         elif timedelta(seconds=0) < diff <= timedelta(minutes=1):
-            while diff.total_seconds() > 0:
+            if diff.total_seconds() > 10:
+                # Aviso a cada 10 segundos
+                while diff.total_seconds() > 10 and countdown_started:
+                    await channel.send(f"{mention_role} Faltam {int(diff.total_seconds())} segundos para o bid encerrar.")
+                    await asyncio.sleep(10)
+                    now = datetime.now(tz)
+                    diff = target_time - now
+            # Nos últimos 10 segundos
+            while diff.total_seconds() > 0 and countdown_started:
                 await channel.send(f"{mention_role} Faltam {int(diff.total_seconds())} segundos para o bid encerrar.")
                 await asyncio.sleep(1)
                 now = datetime.now(tz)
@@ -110,5 +129,4 @@ async def countdown_loop():
         else:
             await asyncio.sleep(10)
 
-import os
 client.run(os.environ['YOUR_BOT_TOKEN'])
