@@ -31,6 +31,33 @@ channel_id = None
 countdown_started = False
 
 @client.event
+async def on_guild_join(guild):
+    for channel in guild.text_channels:
+        if channel.permissions_for(guild.me).send_messages:
+            await channel.send(
+                "👋 Olá! Eu sou o **NightCrows BID Countdown Bot**.
+
+"
+                "**Como me usar:**
+"
+                "1. Use `/targettime` para definir o horário de encerramento do bid (formato HH:MM:SS, UTC-3).
+"
+                "2. Use `/mentions` para definir quem será notificado (ex: @everyone).
+"
+                "3. Use `/channel` para definir o canal onde farei os alertas.
+"
+                "4. Use `/start` para iniciar o countdown.
+"
+                "5. Use `/stop` para interromper manualmente o countdown.
+
+"
+                "⚠️ Os três campos (`targettime`, `mentions`, `channel`) devem ser definidos antes de iniciar.
+"
+                "🧠 Qualquer dúvida, fale com o Spyn0x. Boa sorte no BID!"
+            )
+            break
+
+@client.event
 async def on_ready():
     print(f'Logged in as {client.user}')
     try:
