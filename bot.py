@@ -110,37 +110,39 @@ async def countdown_loop():
     channel = client.get_channel(channel_id)
     tz = pytz.timezone("America/Sao_Paulo")
 
-    avisos_enviados = set()
+    avisos_especiais = [60, 50, 40, 30, 20, 10]
+    avisos_feitos = set()
 
     while countdown_started:
         now = datetime.now(tz)
         diff = target_time - now
         total_seconds = int(diff.total_seconds())
 
+        # Avisos a cada 5 minutos
         if diff <= timedelta(hours=1) and diff > timedelta(minutes=1):
-            if diff.seconds % 300 < 5:
+            if diff.seconds % 300 < 1:
                 mins = diff.seconds // 60
                 await channel.send(f"{mention_role} Faltam {mins} minutos para o bid encerrar.")
-                await asyncio.sleep(300 - (diff.seconds % 300))
+                await asyncio.sleep(60)
             else:
                 await asyncio.sleep(1)
 
+        # Avisos no último minuto
         elif 60 >= total_seconds > 10:
-            if total_seconds >= 60 and "m1" not in avisos_enviados:
-                await channel.send(f"{mention_role} Faltam 1 minuto para o bid encerrar.")
-                avisos_enviados.add("m1")
-            for mark in [50, 40, 30, 20, 10]:
-                if total_seconds <= mark and f"s{mark}" not in avisos_enviados:
-                    await channel.send(f"{mention_role} Faltam {mark} segundos para o bid encerrar.")
-                    avisos_enviados.add(f"s{mark}")
+            if total_seconds in avisos_especiais and total_seconds not in avisos_feitos:
+                msg = "1 minuto" if total_seconds == 60 else f"{total_seconds} segundos"
+                await channel.send(f"{mention_role} Faltam {msg} para o bid encerrar.")
+                avisos_feitos.add(total_seconds)
             await asyncio.sleep(1)
 
+        # Contagem regressiva final
         elif 10 >= total_seconds > 0:
-            if f"s{total_seconds}" not in avisos_enviados:
+            if total_seconds not in avisos_feitos:
                 await channel.send(f"{mention_role} Faltam {total_seconds} segundos para o bid encerrar.")
-                avisos_enviados.add(f"s{total_seconds}")
+                avisos_feitos.add(total_seconds)
             await asyncio.sleep(1)
 
+        # Encerramento
         elif total_seconds <= 0:
             await channel.send(f"{mention_role} O bid encerrou agora!")
             countdown_started = False
