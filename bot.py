@@ -110,7 +110,7 @@ async def countdown_loop():
     channel = client.get_channel(channel_id)
     tz = pytz.timezone("America/Sao_Paulo")
 
-    aviso_10s = [50, 40, 30, 20, 10]
+    avisos_enviados = set()
 
     while countdown_started:
         now = datetime.now(tz)
@@ -126,14 +126,19 @@ async def countdown_loop():
                 await asyncio.sleep(1)
 
         elif 60 >= total_seconds > 10:
-            if total_seconds == 60:
+            if total_seconds >= 60 and "m1" not in avisos_enviados:
                 await channel.send(f"{mention_role} Faltam 1 minuto para o bid encerrar.")
-            elif total_seconds in aviso_10s:
-                await channel.send(f"{mention_role} Faltam {total_seconds} segundos para o bid encerrar.")
+                avisos_enviados.add("m1")
+            for mark in [50, 40, 30, 20, 10]:
+                if total_seconds <= mark and f"s{mark}" not in avisos_enviados:
+                    await channel.send(f"{mention_role} Faltam {mark} segundos para o bid encerrar.")
+                    avisos_enviados.add(f"s{mark}")
             await asyncio.sleep(1)
 
         elif 10 >= total_seconds > 0:
-            await channel.send(f"{mention_role} Faltam {total_seconds} segundos para o bid encerrar.")
+            if f"s{total_seconds}" not in avisos_enviados:
+                await channel.send(f"{mention_role} Faltam {total_seconds} segundos para o bid encerrar.")
+                avisos_enviados.add(f"s{total_seconds}")
             await asyncio.sleep(1)
 
         elif total_seconds <= 0:
